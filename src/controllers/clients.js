@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
 import connection from '../database/database.js'
 import {signInSchema, signUpSchema} from '../schemas/clients.js'
+import {v4 as uuid} from 'uuid'
 
 async function signUpUser (req,res) {
     const {
@@ -49,18 +50,58 @@ async function signInUser (req,res) {
 
         if (!isValidPassword) return res.status(401).send('senha inválida')
 
-        const user = {
-            id: result.rows[0].id,
-            name:result.rows[0].name,
-        }
-        res.send(user)
+        const token = uuid();
+        await connection.query(`INSERT INTO sessions (token,user_id) VALUES ($1,$2)`,[token,result.rows[0].id])
+
+        res.send({token})
     } catch (error) {
         console.log(error)
         res.sendStatus(500)
     }
 }
 
+async function getUser(req,res) {
+    const token = req.headers.authorization?.replace('Bearer ','');
+
+    if (!token) return res.sendStatus(401);
+
+    try {
+        const loggedUser = (await connection.query(`
+            SELECT * FROM sessions
+            JOIN clients ON sessions.user_id = clients.id 
+            WHERE sessions.token = $1
+        `, [token])).rows[0]
+        
+        delete loggedUser.id
+        delete loggedUser.user_id
+        delete loggedUser.password
+
+        res.send(loggedUser)
+    } catch (error) {
+        console.log(error)
+        res.sendStatus(500)
+    }
+}
+
+async function logOutUser(req,res) {
+    const token = req.headers.authorization?.replace('Bearer ','')
+
+    if (!token) return res.sendStatus(401)
+
+    try {
+        await connection.query(`DELETE FROM sessions WHERE token = $1`, [token])
+
+        res.sendStatus(200)
+    } catch (error) {
+        console.log(error)
+        res.sendStatus(500)
+    }
+}
+
+
 export {
     signUpUser,
-    signInUser
+    signInUser,
+    getUser,
+    logOutUser
 }

@@ -6,7 +6,9 @@ import {
 } from './controllers/registers.js'
 import {
     signInUser,
-    signUpUser
+    signUpUser,
+    getUser,
+    logOutUser
 } from './controllers/clients.js'
 
 const app = express()
@@ -26,6 +28,7 @@ app.post('/registers', postTransaction)
 // CLIENTS
 app.post('/sign-up', signUpUser)
 app.post('/sign-in', signInUser)
-// TODO --> rota de login clientes com token
+app.get('/log-out', logOutUser)
+app.get('/user', getUser)
 
 app.listen(PORT,() => console.log('Listening back on port ' + PORT))
