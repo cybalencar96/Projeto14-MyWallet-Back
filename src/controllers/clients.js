@@ -49,7 +49,11 @@ async function signInUser (req,res) {
 
         if (!isValidPassword) return res.status(401).send('senha inválida')
 
-        res.sendStatus(200)
+        const user = {
+            id: result.rows[0].id,
+            name:result.rows[0].name,
+        }
+        res.send(user)
     } catch (error) {
         console.log(error)
         res.sendStatus(500)
