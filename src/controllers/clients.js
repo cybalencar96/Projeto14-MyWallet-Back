@@ -22,9 +22,9 @@ async function signUpUser (req,res) {
 
         await connection.query(`
             INSERT INTO clients 
-                (name,email,password) 
-            VALUES ($1,$2,$3)
-        `,[name,email,hash])
+                (user_id,name,email,password) 
+            VALUES ($1,$2,$3,$4)
+        `,[uuid(), name,email,hash])
 
         res.send(200)
     } catch (error) {
@@ -67,14 +67,17 @@ async function getUser(req,res) {
 
     try {
         const loggedUser = (await connection.query(`
-            SELECT * FROM sessions
+            SELECT 
+                sessions.token,
+                clients.user_id,
+                clients.email,
+                clients.name
+            FROM sessions
             JOIN clients ON sessions.user_id = clients.id 
             WHERE sessions.token = $1
         `, [token])).rows[0]
         
-        delete loggedUser.id
-        delete loggedUser.user_id
-        delete loggedUser.password
+        if (!loggedUser) res.sendStatus(404)
 
         res.send(loggedUser)
     } catch (error) {
