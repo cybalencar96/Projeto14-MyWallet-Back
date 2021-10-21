@@ -22,7 +22,7 @@ app.get('/alive', (req,res) => {
 })
 
 // REGISTERS
-app.get('/registers', getRegisters)
+app.get('/registers/:id', getRegisters)
 app.post('/registers', postTransaction)
 
 // CLIENTS
