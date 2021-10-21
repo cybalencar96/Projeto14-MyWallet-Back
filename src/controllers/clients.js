@@ -44,7 +44,7 @@ async function signInUser (req,res) {
 
     try {
         const result = await connection.query(`SELECT * FROM clients WHERE email = $1`,[email])
-        if (!result.rowCount) return res.status(400).send('email inválido')
+        if (!result.rowCount) return res.status(401).send('Unauthorized')
 
         const isValidPassword = bcrypt.compareSync(password, result.rows[0].password)
 
@@ -69,7 +69,7 @@ async function getUser(req,res) {
         const loggedUser = (await connection.query(`
             SELECT 
                 sessions.token,
-                clients.user_id,
+                clients.user_id AS id,
                 clients.email,
                 clients.name
             FROM sessions

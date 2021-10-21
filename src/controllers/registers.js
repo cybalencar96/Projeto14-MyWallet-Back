@@ -7,7 +7,7 @@ async function getRegisters(req,res) {
 
 async function postTransaction(req,res) {
     const {
-        clientId,
+        userId,
         value,
         description,
         entry
@@ -21,13 +21,13 @@ async function postTransaction(req,res) {
 
     try {
         await connection.query(`
-            INSERT INTO registers (
-                client_id,
+            INSERT INTO transactions (
+                user_id,
                 value,
                 description
             ) 
             VALUES ($1,$2,$3)
-            `,[clientId,entry ? value : value*-1,description])
+            `,[userId,entry ? value : value*-1,description])
 
         res.sendStatus(201)
     }
