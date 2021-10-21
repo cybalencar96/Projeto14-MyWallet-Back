@@ -1,7 +1,8 @@
 import connection from "../database/database.js";
-import { transactionSchema } from "../schemas/registers.js"
+import { transactionSchema } from "../schemas/transactions.js"
+import joi from 'joi'
 
-async function getRegisters(req,res) {
+async function getTransactions(req,res) {
     const userId = req.params.id
     
     if (!userId) {
@@ -27,17 +28,18 @@ async function getRegisters(req,res) {
 
 async function postTransaction(req,res) {
     const {
-        userId,
         value,
         description,
         entry
     } = req.body
 
+    const userId = req.params.id
+
     const { error } = transactionSchema.validate(req.body)
-    if (error) {
-        res.status(400).send(error.details[0].message)
-        return
-    }
+    if (error) return res.status(400).send(error.details[0].message)
+
+    const idError = joi.object({id: joi.string().required()}).validate({id: userId}).error
+    if (idError) return res.status(400).send(idError.details[0].message)
 
     try {
         await connection.query(`
@@ -58,6 +60,6 @@ async function postTransaction(req,res) {
 }
 
 export {
-    getRegisters,
+    getTransactions,
     postTransaction,
 }

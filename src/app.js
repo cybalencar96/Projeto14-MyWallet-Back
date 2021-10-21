@@ -1,15 +1,15 @@
 import express from 'express'
 import cors from 'cors'
 import { 
-    getRegisters,
+    getTransactions,
     postTransaction
-} from './controllers/registers.js'
+} from './controllers/transactions.js'
 import {
     signInUser,
     signUpUser,
     getUser,
     logOutUser
-} from './controllers/clients.js'
+} from './controllers/users.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -21,9 +21,9 @@ app.get('/alive', (req,res) => {
     res.send("I'm alivee!!")
 })
 
-// REGISTERS
-app.get('/registers/:id', getRegisters)
-app.post('/registers', postTransaction)
+// TRANSACTIONS
+app.get('/transactions/:id', getTransactions)
+app.post('/transactions/:id', postTransaction)
 
 // CLIENTS
 app.post('/sign-up', signUpUser)
