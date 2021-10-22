@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
-import connection from '../database/database.js'
+import connection from "../database/index.js"
 import {signInSchema, signUpSchema} from '../schemas/users.js'
+import db from '../database/database.js'
 import {v4 as uuid} from 'uuid'
 
 async function signUpUser (req,res) {
@@ -10,23 +11,24 @@ async function signUpUser (req,res) {
         password,
         confirmPassword
     } = req.body
-    console.log(password)
+    
     const { error } = signUpSchema.validate(req.body)
     if (error) return res.status(400).send(error.details[0].message)
+    if (!confirmPassword) return res.status(400).send('missing password confirmation')
 
     try {
-        const existingEmail = await connection.query(`SELECT * FROM users WHERE email = $1`, [email])
-        if (existingEmail.rowCount) return res.status(401).send('email in use')
+        const existingEmail = await db.findUserByEmail(email)
+        if (existingEmail.rowCount) {
+            return res.status(401).send('email in use')
+        }
 
-        const hash = bcrypt.hashSync(password,12)
+        await db.insertUser({
+            name,
+            email,
+            password
+        })
 
-        await connection.query(`
-            INSERT INTO users 
-                (user_id,name,email,password) 
-            VALUES ($1,$2,$3,$4)
-        `,[uuid(), name,email,hash])
-
-        res.send(200)
+        res.sendStatus(200)
     } catch (error) {
         console.log(error)
         res.sendStatus(500)
@@ -43,17 +45,14 @@ async function signInUser (req,res) {
     if ( error ) return res.status(400).send(error.details[0].message)
 
     try {
-        const result = await connection.query(`SELECT * FROM users WHERE email = $1`,[email])
+        const result = await db.findUserByEmail(email)
         if (!result.rowCount) return res.status(401).send('Unauthorized')
 
         const isValidPassword = bcrypt.compareSync(password, result.rows[0].password)
-
         if (!isValidPassword) return res.status(401).send('senha inválida')
-
-        const token = uuid();
-        await connection.query(`INSERT INTO sessions (token,user_id) VALUES ($1,$2)`,[token,result.rows[0].id])
-
-        res.send({token})
+        
+        const token = await db.insertSession(result.rows[0].id)
+        res.status(200).send({token})
     } catch (error) {
         console.log(error)
         res.sendStatus(500)

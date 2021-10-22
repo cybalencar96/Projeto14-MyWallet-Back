@@ -12,14 +12,11 @@ import {
 } from './controllers/users.js'
 
 const app = express()
-const PORT = process.env.PORT || 4000
 
 app.use(express.json())
 app.use(cors())
 
-app.get('/alive', (req,res) => {
-    res.send("I'm alivee!!")
-})
+app.get('/alive', (req,res) => res.send("I'm alivee!!"))
 
 // TRANSACTIONS
 app.get('/transactions/:id', getTransactions)
@@ -31,4 +28,4 @@ app.post('/sign-in', signInUser)
 app.get('/log-out', logOutUser)
 app.get('/user', getUser)
 
-app.listen(PORT,() => console.log('Listening back on port ' + PORT))
+export default app;

@@ -1,4 +1,4 @@
-import connection from "../database/database.js";
+import connection from "../database/index.js"
 import { transactionSchema } from "../schemas/transactions.js"
 import joi from 'joi'
 
