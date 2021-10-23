@@ -5,10 +5,10 @@ import db from '../src/database/database.js'
 
 const fakeUsers = getFakeUsers()
 let token; 
-
+let user;
 beforeAll(async () => {
     await db.insertUser(fakeUsers[0])
-    const user = await db.findUserByEmail(fakeUsers[0].email)
+    user = await db.findUserByEmail(fakeUsers[0].email)
     token = await db.insertSession(user.rows[0].id)
 })
 
@@ -30,11 +30,21 @@ describe('rota GET /transactions', () => {
     })
 
     it('should return 200 when getting transactions', async () => {
+        await db.postTransaction(user.rows[0].id,true,30,'insert 30')
+        await db.postTransaction(user.rows[0].id,false,30,'remove 30')
+
         const result = await supertest(app)
             .get('/transactions')
             .set('Authorization', `Bearer ${token}`)
 
         expect(result.status).toEqual(200)
+        result.body.map(transaction => {
+            expect(transaction).toHaveProperty('user_id',user.rows[0].id)
+            expect(transaction).toHaveProperty('token',token)
+            expect(transaction).toHaveProperty('value')
+            expect(transaction).toHaveProperty('date')
+            expect(transaction).toHaveProperty('description')
+        })
     })
 })
 

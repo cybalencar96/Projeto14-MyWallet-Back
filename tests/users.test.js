@@ -1,12 +1,10 @@
 import app from '../src/app.js'
 import supertest from 'supertest'
-import connection from '../src/database/index.js'
 import db from '../src/database/database.js'
 import { getFakeUsers } from '../src/utils/faker.js'
 
 const fakeUsers = getFakeUsers()
 fakeUsers[0].email = 'cintia31@hotmail.com' // mockando email pq lib faker buga ao comparar 2 iguais
-fakeUsers[0].password = 'mArAiA@1123' // mockando email pq lib faker buga ao comparar 2 iguais
 fakeUsers[1].email = 'cristiana.reis@yahoo.com' // mockando email pq lib faker buga ao comparar 2 iguais
 
 
@@ -74,7 +72,6 @@ describe('POST /sign-up user', () => {
             confirmPassword: fakeUsers[1].password
         }
         
-        console.log(fakeUsers[1].password)
         const result = await supertest(app).post('/sign-up').send(body)
         expect(result.status).toEqual(200)
     })
@@ -135,6 +132,7 @@ describe('POST /sign-in user', () => {
 
         const result = await supertest(app).post('/sign-in').send(body)
         expect(result.status).toEqual(200)
+        expect(result.body).toHaveProperty('token')
     })
 })
 
@@ -174,10 +172,10 @@ describe('GET /log-out user', () => {
 
 describe('GET /user', () => {
     let token;
-
+    let user;
     beforeAll(async () => {
         await db.insertUser(fakeUsers[0])
-        const user = await db.findUserByEmail(fakeUsers[0].email)
+        user = await db.findUserByEmail(fakeUsers[0].email)
         token = await db.insertSession(user.rows[0].id)
     })
 
@@ -205,5 +203,11 @@ describe('GET /user', () => {
                                 .set('Authorization',`Bearer ${token}`)
 
         expect(result.status).toEqual(200)
+        expect(result.body).toHaveProperty('token', token)
+        expect(result.body).toHaveProperty('id',user.rows[0].id)
+        expect(result.body).toHaveProperty('user_id',user.rows[0].user_id)
+        expect(result.body).toHaveProperty('email',fakeUsers[0].email)
+        expect(result.body).toHaveProperty('name',fakeUsers[0].name)
     })
+
 })
