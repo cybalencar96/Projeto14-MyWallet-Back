@@ -64,7 +64,7 @@ async function getUser(req,res) {
     if (!token) return res.sendStatus(401);
 
     try {
-        const loggedUser = await db.findLoggedUser(token)
+        const loggedUser = (await db.findLoggedUser(token)).rows[0]
         if (!loggedUser) res.sendStatus(404)
 
         res.send(loggedUser)

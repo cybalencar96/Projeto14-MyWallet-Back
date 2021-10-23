@@ -10,6 +10,10 @@ fakeUsers[0].password = 'mArAiA@1123' // mockando email pq lib faker buga ao com
 fakeUsers[1].email = 'cristiana.reis@yahoo.com' // mockando email pq lib faker buga ao comparar 2 iguais
 
 
+beforeAll(async () => {
+    await db.deleteAllData()
+})
+
 afterAll(async () => {
     await db.deleteAllData()
 })
