@@ -11,9 +11,7 @@ fakeUsers[1].email = 'cristiana.reis@yahoo.com' // mockando email pq lib faker b
 
 
 afterAll(async () => {
-    await connection.query('DELETE FROM users;')
-    await connection.query('DELETE FROM sessions;')
-    await connection.query('DELETE FROM transactions;')
+    await db.deleteAllData()
 })
 
 //=====================================================================================
@@ -135,10 +133,72 @@ describe('POST /sign-in user', () => {
     })
 })
 
-// describe('GET /log-out user', () => {
-    
-// })
+//=====================================================================================
+//=====================================================================================
 
-// describe('GET /user', () => {
+describe('GET /log-out user', () => {
+    let token;
+
+    beforeAll(async () => {
+        await db.insertUser(fakeUsers[0])
+        const user = await db.findUserByEmail(fakeUsers[0].email)
+        token = await db.insertSession(user.rows[0].id)
+    })
+
+    afterAll(async () => {
+        await db.deleteAllData()
+    })
     
-// })
+    it('should return 401 when not token', async () => {
+        const result = await supertest(app).get('/log-out')
+        expect(result.status).toEqual(401)
+    })
+
+    it('should return 200 when user is logged out', async () => {
+
+        const result = await supertest(app)
+            .get('/log-out')
+            .set('Authorization', `Bearer ${token}`)
+        expect(result.status).toEqual(200)
+    })
+})
+
+//=====================================================================================
+//=====================================================================================
+
+
+describe('GET /user', () => {
+    let token;
+
+    beforeAll(async () => {
+        await db.insertUser(fakeUsers[0])
+        const user = await db.findUserByEmail(fakeUsers[0].email)
+        token = await db.insertSession(user.rows[0].id)
+    })
+
+    afterAll(async () => {
+        await db.deleteAllData()
+    })
+
+    it('should return 401 if not token', async () => {
+        const result = await supertest(app).get('/user')
+
+        expect(result.status).toEqual(401)
+    })
+
+    it('should return 404 if not logged (token not found)', async () => {
+        const result = await supertest(app)
+                                .get('/user')
+                                .set('Authorization',`Bearer token-falso-123`)
+
+        expect(result.status).toEqual(404)
+    })
+
+    it('should return 200 if not token', async () => {
+        const result = await supertest(app)
+                                .get('/user')
+                                .set('Authorization',`Bearer ${token}`)
+
+        expect(result.status).toEqual(200)
+    })
+})

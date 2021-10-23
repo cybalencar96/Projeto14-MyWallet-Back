@@ -7,7 +7,7 @@ const connection = new Pool({
     user: 'postgres',
     port: 5432,
     database: 'my_wallet',
-    password: '33150602'
+    password: '123456'
 })
 
 export default connection

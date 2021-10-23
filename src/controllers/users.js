@@ -2,7 +2,6 @@ import bcrypt from 'bcrypt'
 import connection from "../database/index.js"
 import {signInSchema, signUpSchema} from '../schemas/users.js'
 import db from '../database/database.js'
-import {v4 as uuid} from 'uuid'
 
 async function signUpUser (req,res) {
     const {
@@ -65,17 +64,7 @@ async function getUser(req,res) {
     if (!token) return res.sendStatus(401);
 
     try {
-        const loggedUser = (await connection.query(`
-            SELECT 
-                sessions.token,
-                users.user_id AS id,
-                users.email,
-                users.name
-            FROM sessions
-            JOIN users ON sessions.user_id = users.id 
-            WHERE sessions.token = $1
-        `, [token])).rows[0]
-        
+        const loggedUser = await db.findLoggedUser(token)
         if (!loggedUser) res.sendStatus(404)
 
         res.send(loggedUser)
@@ -91,7 +80,7 @@ async function logOutUser(req,res) {
     if (!token) return res.sendStatus(401)
 
     try {
-        await connection.query(`DELETE FROM sessions WHERE token = $1`, [token])
+        await db.logOutUser(token)
 
         res.sendStatus(200)
     } catch (error) {

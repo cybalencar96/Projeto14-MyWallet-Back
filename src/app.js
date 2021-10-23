@@ -19,8 +19,8 @@ app.use(cors())
 app.get('/alive', (req,res) => res.send("I'm alivee!!"))
 
 // TRANSACTIONS
-app.get('/transactions/:id', getTransactions)
-app.post('/transactions/:id', postTransaction)
+app.get('/transactions', getTransactions)
+app.post('/transactions', postTransaction)
 
 // CLIENTS
 app.post('/sign-up', signUpUser)

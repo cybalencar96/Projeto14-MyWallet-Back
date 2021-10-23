@@ -1,4 +1,5 @@
 import faker from 'faker-br'
+import {v4 as uuid} from 'uuid'
 
 function getFakeName() {
     return faker.name.findName()
@@ -12,15 +13,11 @@ function getFakePassword() {
     return faker.internet.password()
 }
 
-function getFakeUUID() {
-    return faker.random.uuid();
-}
-
 function getFakeUsers() {
     const arrUsers = []
     for (let i = 0; i < 10; i++) {
         arrUsers.push({
-            user_id: getFakeUUID(),
+            user_id: uuid(),
             email: getFakeEmail().toLowerCase(),
             password: getFakePassword(),
             name: getFakeName()
@@ -29,13 +26,9 @@ function getFakeUsers() {
     return arrUsers
 }
  
-
-
-console.log(getFakeUUID())
 export {
     getFakeUsers,
     getFakeName,
     getFakeEmail,
     getFakePassword,
-    getFakeUUID
 }
