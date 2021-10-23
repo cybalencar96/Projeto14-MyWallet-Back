@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import connection from "../database/index.js"
-import {signInSchema, signUpSchema} from '../schemas/users.js'
+import {signInSchema, signUpSchema,validatePassword} from '../schemas/users.js'
 import db from '../database/database.js'
 
 async function signUpUser (req,res) {
@@ -13,7 +13,9 @@ async function signUpUser (req,res) {
     
     const { error } = signUpSchema.validate(req.body)
     if (error) return res.status(400).send(error.details[0].message)
-    if (!confirmPassword) return res.status(400).send('missing password confirmation')
+
+    const pwdError = validatePassword(password)
+    if (pwdError) return res.status(400).send(pwdError?.details.map(detail => detail.message))
 
     try {
         const existingEmail = await db.findUserByEmail(email)

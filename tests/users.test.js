@@ -74,6 +74,7 @@ describe('POST /sign-up user', () => {
             confirmPassword: fakeUsers[1].password
         }
         
+        console.log(fakeUsers[1].password)
         const result = await supertest(app).post('/sign-up').send(body)
         expect(result.status).toEqual(200)
     })
