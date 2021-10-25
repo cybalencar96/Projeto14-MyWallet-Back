@@ -1,6 +1,5 @@
 import connection from "../database/index.js"
 import { transactionSchema } from "../schemas/transactions.js"
-import joi from 'joi'
 import db from "../database/database.js"
 
 async function getTransactions(req,res) {

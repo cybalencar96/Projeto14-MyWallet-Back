@@ -6,6 +6,7 @@ import db from '../src/database/database.js'
 const fakeUsers = getFakeUsers()
 let token; 
 let user;
+
 beforeAll(async () => {
     await db.insertUser(fakeUsers[0])
     user = await db.findUserByEmail(fakeUsers[0].email)
@@ -37,13 +38,19 @@ describe('rota GET /transactions', () => {
             .get('/transactions')
             .set('Authorization', `Bearer ${token}`)
 
+        
         expect(result.status).toEqual(200)
+
+        const obj = {
+            user_id: user.rows[0].id,
+            token: token,
+            value: expect.anything(),
+            date: expect.anything(),
+            description: expect.anything()
+        }
+
         result.body.map(transaction => {
-            expect(transaction).toHaveProperty('user_id',user.rows[0].id)
-            expect(transaction).toHaveProperty('token',token)
-            expect(transaction).toHaveProperty('value')
-            expect(transaction).toHaveProperty('date')
-            expect(transaction).toHaveProperty('description')
+            expect(transaction).toEqual(expect.objectContaining(obj))
         })
     })
 })
