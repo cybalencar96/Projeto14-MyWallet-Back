@@ -1,12 +1,13 @@
-import app from '../src/app.js'
-import supertest from 'supertest'
-import db from '../src/database/database.js'
-import { getFakeUsers } from '../src/utils/faker.js'
+import '../src/setup.js';
+import app from '../src/app.js';
+import supertest from 'supertest';
+import db from '../src/repositories/database.js';
+import { getFakeUsers } from '../src/utils/faker.js';
+import * as userService from '../src/services/userService';
 
 const fakeUsers = getFakeUsers()
 fakeUsers[0].email = 'cintia31@hotmail.com' // mockando email pq lib faker buga ao comparar 2 iguais
 fakeUsers[1].email = 'cristiana.reis@yahoo.com' // mockando email pq lib faker buga ao comparar 2 iguais
-
 
 beforeAll(async () => {
     await db.deleteAllData()
@@ -16,17 +17,14 @@ afterAll(async () => {
     await db.deleteAllData()
 })
 
-//=====================================================================================
-//=====================================================================================
-
 describe('POST /sign-up user', () => {
 
     beforeEach(async () => {
-        await db.insertUser(fakeUsers[0])
+        await userService.signup(fakeUsers[0])
     })
 
     afterEach(async () => {
-        await db.deleteUser(fakeUsers[0].user_id)
+        await userService.remove(fakeUsers[0].user_id)
     })
 
     it('should return 401 when email already exists', async () => {
@@ -87,11 +85,11 @@ describe('POST /sign-in user', () => {
     })
     
     beforeEach(async () => {
-        await db.insertUser(fakeUsers[0])
+        await userService.signup(fakeUsers[0])
     })
 
     afterEach(async () => {
-        await db.deleteUser(fakeUsers[0].user_id)
+        await userService.remove(fakeUsers[0].user_id)
     })
 
     it('should return 400 when invalid body', async () => {
@@ -143,9 +141,9 @@ describe('GET /log-out user', () => {
     let token;
 
     beforeAll(async () => {
-        await db.insertUser(fakeUsers[0])
-        const user = await db.findUserByEmail(fakeUsers[0].email)
-        token = await db.insertSession(user.rows[0].id)
+        await userService.signup(fakeUsers[0])
+        const user = await userService.find({by: 'email', value: fakeUsers[0].email})
+        token = await userService.login(user.rows[0].id)
     })
 
     afterAll(async () => {
@@ -174,9 +172,9 @@ describe('GET /user', () => {
     let token;
     let user;
     beforeAll(async () => {
-        await db.insertUser(fakeUsers[0])
-        user = await db.findUserByEmail(fakeUsers[0].email)
-        token = await db.insertSession(user.rows[0].id)
+        await userService.signup(fakeUsers[0]);
+        user = await userService.find({by: 'email', value: fakeUsers[0].email});
+        token = await userService.login(user.rows[0].id);
     })
 
     afterAll(async () => {
@@ -194,7 +192,7 @@ describe('GET /user', () => {
                                 .get('/user')
                                 .set('Authorization',`Bearer token-falso-123`)
 
-        expect(result.status).toEqual(404)
+        expect(result.status).toEqual(401)
     })
 
     it('should return 200 if not token', async () => {

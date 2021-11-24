@@ -10,22 +10,25 @@ import {
     getUser,
     logOutUser
 } from './controllers/users.js'
+import {signInSchema, signUpSchema } from './schemas/users.js';
+import { transactionSchema } from "./schemas/transactions.js";
+import { validateBody, auth } from './middlewares/validateRequest.js';
 
-const app = express()
+const app = express();
 
-app.use(express.json())
-app.use(cors())
+app.use(express.json());
+app.use(cors());
 
-app.get('/alive', (req,res) => res.send("I'm alivee!!"))
+app.get('/alive', (req,res) => res.send("I'm alivee!!"));
 
 // TRANSACTIONS
-app.get('/transactions', getTransactions)
-app.post('/transactions', postTransaction)
+app.get('/transactions', auth, getTransactions);
+app.post('/transactions', auth, validateBody(transactionSchema), postTransaction);
 
 // CLIENTS
-app.post('/sign-up', signUpUser)
-app.post('/sign-in', signInUser)
-app.get('/log-out', logOutUser)
-app.get('/user', getUser)
+app.post('/sign-up', validateBody(signUpSchema),signUpUser);
+app.post('/sign-in', validateBody(signInSchema), signInUser);
+app.get('/log-out', auth, logOutUser);
+app.get('/user', auth, getUser);
 
 export default app;
