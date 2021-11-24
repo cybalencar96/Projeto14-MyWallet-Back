@@ -9,7 +9,6 @@ const fakeUsers = getFakeUsers()
 fakeUsers[0].email = 'cintia31@hotmail.com' // mockando email pq lib faker buga ao comparar 2 iguais
 fakeUsers[1].email = 'cristiana.reis@yahoo.com' // mockando email pq lib faker buga ao comparar 2 iguais
 
-
 beforeAll(async () => {
     await db.deleteAllData()
 })
@@ -17,9 +16,6 @@ beforeAll(async () => {
 afterAll(async () => {
     await db.deleteAllData()
 })
-
-//=====================================================================================
-//=====================================================================================
 
 describe('POST /sign-up user', () => {
 
@@ -196,7 +192,7 @@ describe('GET /user', () => {
                                 .get('/user')
                                 .set('Authorization',`Bearer token-falso-123`)
 
-        expect(result.status).toEqual(404)
+        expect(result.status).toEqual(401)
     })
 
     it('should return 200 if not token', async () => {

@@ -1,19 +1,23 @@
 import bcrypt from 'bcrypt'
-import {signInSchema, signUpSchema,validatePassword} from '../schemas/users.js'
 import * as userService from '../services/userService.js'
-
+import pwdComplexity from 'joi-password-complexity'
 async function signUpUser (req,res) {
     const {
         name,
         email,
         password,
-        confirmPassword
     } = req.body;
-    
-    const { error } = signUpSchema.validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
 
-    const pwdError = validatePassword(password);
+    const complexityOptions = {
+        min: 8,
+        max: 26,
+        lowerCase: 1,
+        upperCase: 1,
+        numeric: 1,
+        requirementCount: 3,
+      };
+
+    const pwdError = pwdComplexity(complexityOptions, 'Password').validate(password).error
     if (pwdError) return res.status(400).send(pwdError?.details.map(detail => detail.message));
 
     try {
@@ -41,13 +45,11 @@ async function signInUser (req,res) {
         password
     } = req.body
 
-    const { error } = signInSchema.validate(req.body);
-    if ( error ) return res.status(400).send(error.details[0].message);
-
     try {
         const user = await userService.find({by: 'email', value: email});
         if (!user.rowCount) return res.status(401).send('Unauthorized');
 
+        
         const isValidPassword = bcrypt.compareSync(password, user.rows[0].password);
         if (!isValidPassword) return res.status(401).send('senha inválida');
         
@@ -60,13 +62,9 @@ async function signInUser (req,res) {
 }
 
 async function getUser(req,res) {
-    const token = req.headers.authorization?.replace('Bearer ','');
-
-    if (!token) return res.sendStatus(401);
-
     try {
+        const token = res.locals.token;
         const loggedUser = await userService.find({by: 'session', value: token});
-        if (!loggedUser.rows[0]) res.sendStatus(404);
 
         res.send(loggedUser.rows[0])
     } catch (error) {
@@ -76,11 +74,8 @@ async function getUser(req,res) {
 }
 
 async function logOutUser(req,res) {
-    const token = req.headers.authorization?.replace('Bearer ','');
-
-    if (!token) return res.sendStatus(401);
-
     try {
+        const token = res.locals.token;
         await userService.logout(token);
 
         res.sendStatus(200);

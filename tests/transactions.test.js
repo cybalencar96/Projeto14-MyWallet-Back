@@ -23,11 +23,11 @@ afterAll(() => {
 
 describe('rota GET /transactions', () => {
 
-    it('should return 400 when not sending token', async () => {
+    it('should return 401 when not sending token', async () => {
         const result = await supertest(app)
             .get('/transactions');
 
-        expect(result.status).toEqual(400);
+        expect(result.status).toEqual(401);
     })
 
     it('should return 401 when token not found', async () => {
@@ -76,7 +76,7 @@ describe('rota GET /transactions', () => {
 
 describe('rota POST /transactions', () => {
 
-    it('should return 400 when not sending token', async () => {
+    it('should return 401 when not sending token', async () => {
         const body = {
             value: 30,
             description: "not much at all",
@@ -87,7 +87,7 @@ describe('rota POST /transactions', () => {
             .post('/transactions')
             .send(body)
 
-        expect(result.status).toEqual(400)
+        expect(result.status).toEqual(401)
     })
 
     it('should return 400 when invalid body', async () => {

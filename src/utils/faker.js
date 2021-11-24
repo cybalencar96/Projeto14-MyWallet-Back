@@ -1,4 +1,4 @@
-import faker from 'faker-br'
+import faker from 'faker'
 import {v4 as uuid} from 'uuid'
 
 function getFakeName() {
@@ -10,7 +10,7 @@ function getFakeEmail() {
 }
 
 function getFakePassword() {
-    return faker.internet.password()
+    return "Fake@1233fake"
 }
 
 function getFakeUsers() {
