@@ -39,6 +39,14 @@ An animated gif to introduce you to this simple, but very pleasant full-stack pr
 
 ## **Getting Started**
 
+- Want to simply try it? Access demo by [clicking here](https://mywallet-front-five.vercel.app/)!
+
+- Want to run only front in local environment? Learn how on README in frontend repository by [clicking here](https://github.com/cybalencar96/mywallet-front)!
+
+- Want to run front and backend local? Keep reading then!
+  
+  <br />
+
 ### **Prerequisites**
 
 - npm
