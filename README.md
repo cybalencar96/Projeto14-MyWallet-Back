@@ -71,21 +71,30 @@ git clone https://github.com/cybalencar96/mywallet-front.git
 npm i
 ```
 
-1. Create a .env file in backend folder (root) with following variables ( example values )
+5. Create a .env.development in frontend root folder with the variable below
+```sh
+REACT_APP_SERVER_URL=http://localhost:4000
+```
 
+6. Create a .env.dev file in backend root folder with following variables 
+```sh
+DB_USER
+DB_HOST
+DB_PASS
+DB_PORT
+DB_NAME
+```
+
+7. Create a postgres database and fill .env.dev with database credentials
 ```sh
 DB_USER=postgres
 DB_HOST=localhost
 DB_PASS=123456
 DB_PORT=5432
-DB_NAME=gratibox
+DB_NAME=mywallet
 ```
 
-6. Create a postgres database and fill .env with database credentials
-
-   <br />
-
-7. Run (copy & paste) the dump.sql statements in database
+8. Run (copy & paste) the dump.sql statements in database
    <br />
    <br />
 
@@ -94,7 +103,7 @@ DB_NAME=gratibox
 1. Start backend server
 
 ```sh
-npm run start
+npm run dev
 ```
 
 2. Start frontend
