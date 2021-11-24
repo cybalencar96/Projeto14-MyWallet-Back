@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt'
-import connection from "../database/index.js"
 import {signInSchema, signUpSchema,validatePassword} from '../schemas/users.js'
-import db from '../database/database.js'
+import * as userService from '../services/userService.js'
 
 async function signUpUser (req,res) {
     const {
@@ -9,30 +8,30 @@ async function signUpUser (req,res) {
         email,
         password,
         confirmPassword
-    } = req.body
+    } = req.body;
     
-    const { error } = signUpSchema.validate(req.body)
-    if (error) return res.status(400).send(error.details[0].message)
+    const { error } = signUpSchema.validate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
 
-    const pwdError = validatePassword(password)
-    if (pwdError) return res.status(400).send(pwdError?.details.map(detail => detail.message))
+    const pwdError = validatePassword(password);
+    if (pwdError) return res.status(400).send(pwdError?.details.map(detail => detail.message));
 
     try {
-        const existingEmail = await db.findUserByEmail(email)
+        const existingEmail = await userService.find({by: 'email', value: email});
         if (existingEmail.rowCount) {
-            return res.status(401).send('email in use')
+            return res.status(401).send('email in use');
         }
 
-        await db.insertUser({
+        await userService.signup({
             name,
             email,
-            password
-        })
+            password,
+        });
 
         res.sendStatus(200)
     } catch (error) {
-        console.log(error)
-        res.sendStatus(500)
+        console.log(error);
+        res.sendStatus(500);
     }
 }
 
@@ -42,21 +41,21 @@ async function signInUser (req,res) {
         password
     } = req.body
 
-    const { error } = signInSchema.validate(req.body)
-    if ( error ) return res.status(400).send(error.details[0].message)
+    const { error } = signInSchema.validate(req.body);
+    if ( error ) return res.status(400).send(error.details[0].message);
 
     try {
-        const result = await db.findUserByEmail(email)
-        if (!result.rowCount) return res.status(401).send('Unauthorized')
+        const user = await userService.find({by: 'email', value: email});
+        if (!user.rowCount) return res.status(401).send('Unauthorized');
 
-        const isValidPassword = bcrypt.compareSync(password, result.rows[0].password)
-        if (!isValidPassword) return res.status(401).send('senha inválida')
+        const isValidPassword = bcrypt.compareSync(password, user.rows[0].password);
+        if (!isValidPassword) return res.status(401).send('senha inválida');
         
-        const token = await db.insertSession(result.rows[0].id)
-        res.status(200).send({token})
+        const token = await userService.login(user.rows[0].id);
+        res.status(200).send({token});
     } catch (error) {
-        console.log(error)
-        res.sendStatus(500)
+        console.log(error);
+        res.sendStatus(500);
     }
 }
 
@@ -66,10 +65,10 @@ async function getUser(req,res) {
     if (!token) return res.sendStatus(401);
 
     try {
-        const loggedUser = (await db.findLoggedUser(token)).rows[0]
-        if (!loggedUser) res.sendStatus(404)
+        const loggedUser = await userService.find({by: 'session', value: token});
+        if (!loggedUser.rows[0]) res.sendStatus(404);
 
-        res.send(loggedUser)
+        res.send(loggedUser.rows[0])
     } catch (error) {
         console.log(error)
         res.sendStatus(500)
@@ -77,17 +76,17 @@ async function getUser(req,res) {
 }
 
 async function logOutUser(req,res) {
-    const token = req.headers.authorization?.replace('Bearer ','')
+    const token = req.headers.authorization?.replace('Bearer ','');
 
-    if (!token) return res.sendStatus(401)
+    if (!token) return res.sendStatus(401);
 
     try {
-        await db.logOutUser(token)
+        await userService.logout(token);
 
-        res.sendStatus(200)
+        res.sendStatus(200);
     } catch (error) {
-        console.log(error)
-        res.sendStatus(500)
+        console.log(error);
+        res.sendStatus(500);
     }
 }
 
@@ -96,5 +95,5 @@ export {
     signUpUser,
     signInUser,
     getUser,
-    logOutUser
+    logOutUser,
 }
